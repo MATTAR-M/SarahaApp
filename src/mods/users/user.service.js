@@ -5,7 +5,10 @@ import { successResponse } from "../../common/utils/response.succ.js";
 import { decrypt, encrypt } from "../../common/utils/security/encrypt.security.js";
 // import {hashSync,compareSync} from "bcrypt";
 import { Compare, Hash } from "../../common/utils/security/hash.secruity.js";
-
+import jwt from "jsonwebtoken"
+import {v4 as uuidv4} from "uuid"
+import { generateToken, verifyToken } from "../../common/utils/token.serivce.js";
+import {authentication} from "../../common/middleware/authentication.js"
 export const signUp = async (req, res, next) => {
     const { userName, email, password,cpassword, age, gender,phone } = req.body;
     if (await DBS.findone({model:userModel,filter:{email}})) {
@@ -43,14 +46,26 @@ export const signIn = async (req, res, next) => {
     //   res.status(400).json({ message: `invalid password` });
     throw new Error("invalid password",{cause:600})    
     }
-    successResponse({res,message:"Successful sign in",data:user})
+
+  const accessToken = generateToken({
+    payload:{id:user._id,email:user.email},
+    secritKey:"Doaa",
+    options:{
+    expiresIn:"1h",
+    // issuer:"Matar",
+    // audience:"People",
+    jwtid:uuidv4(),
+    // noTimestamp:true,
+    // notBefore:'1m'
+  }})
+
+    successResponse({res,message:"Successful sign in",data:{accessToken}})
 };
+
+
+
 export const getProfile = async (req, res, next) => {
-  const {id} = req.params;
-  const user = await DBS.findone({model:userModel,filter:{_id:id}}) 
-  if (!user) {
-  //   res.status(409).json({ message: `email already exist` });
-  throw new Error("user not found",{cause:402})
-  } 
-  successResponse({res,status:201,data:{...user._doc,phone:decrypt(user.phone)}})
+  // const {id} = req.params;
+  successResponse({res,status:201,data:req.user})
+  // successResponse({res,status:201,data:{...user._doc,phone:decrypt(user.phone)}})
 }
