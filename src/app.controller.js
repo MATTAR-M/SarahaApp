@@ -3,11 +3,12 @@ import userModel from './DB/Models/user.model.js'
 import checkConnection from './DB/connectionDB.js'
 import userRouter from './mods/users/user.contorller.js'
 import cors from 'cors'
+import { Port } from '../config/config.service.js'
 const app = express()
-const port = 3000
+const port = Port
 
 const bootstrap = ()=>{
-    app.use(cors(),express.json())
+    app.use(cors({origin : "*"}),express.json())
     checkConnection()
     userModel
     app.use('/users',userRouter)

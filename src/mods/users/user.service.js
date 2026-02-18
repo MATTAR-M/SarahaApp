@@ -16,6 +16,7 @@ import {
 } from "../../common/utils/token.serivce.js";
 import { authentication } from "../../common/middleware/authentication.js";
 import { OAuth2Client } from "google-auth-library";
+import { SALT_ROUNDS, SECRET_KEY } from "../../../config/config.service.js";
 
 export const signUp = async (req, res, next) => {
   const { userName, email, password, cpassword, age, gender, phone } = req.body;
@@ -31,7 +32,7 @@ export const signUp = async (req, res, next) => {
     data: {
       userName,
       email,
-      password: Hash({ plainText: password }),
+      password: Hash({ plainText: password },{salt_rounds:SALT_ROUNDS}),
       phone: encrypt(phone),
       age,
       gender,
@@ -72,7 +73,7 @@ export const signUpWithGmail = async (req, res, next) => {
   }
   const accessToken = generateToken({
     payload: { id: user._id, email: user.email },
-    secritKey: "Doaa",
+    secritKey: SECRET_KEY,
     options: {
       expiresIn: "1h",
       jwtid: uuidv4(),
@@ -97,7 +98,7 @@ export const signIn = async (req, res, next) => {
 
   const accessToken = generateToken({
     payload: { id: user._id, email: user.email },
-    secritKey: "Doaa",
+    secritKey:SECRET_KEY,
     options: {
       expiresIn: "1h",
       // issuer:"Matar",

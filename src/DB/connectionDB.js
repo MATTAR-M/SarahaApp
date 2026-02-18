@@ -1,8 +1,8 @@
 import mongoose from "mongoose";
-
+import { DB_URI } from "../../config/config.service.js";
 const checkConnection = async () => {
   await mongoose
-    .connect("mongodb://localhost:27017/sarahaApp", {
+    .connect(DB_URI, {
       serverSelectionTimeoutMS: 5000,
     })
     .then(() => {
@@ -12,5 +12,4 @@ const checkConnection = async () => {
       console.log("Failed to connect to DB🤷‍♂️  🤷‍♂️", error);
     });
 };
-
 export default checkConnection;
