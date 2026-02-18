@@ -6,3 +6,7 @@ export const providerEnum = {
     system : "System",
     google : "Google"
 }
+export const RoleEnum = {
+    user:"user",
+    admin:"admin"
+}
