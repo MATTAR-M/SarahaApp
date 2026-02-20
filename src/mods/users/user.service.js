@@ -38,7 +38,15 @@ export const signUp = async (req, res, next) => {
       gender,
     },
   });
-  successResponse({ res, status: 201, data: user });
+  const accessToken = generateToken({
+    payload: { id: user._id, email: user.email },
+    secritKey: SECRET_KEY,
+    options: {
+      expiresIn: "1h",
+      jwtid: uuidv4(),
+    },
+  });
+  successResponse({ res, status: 201 ,data:{user,accessToken}});
 };
 
 export const signUpWithGmail = async (req, res, next) => {
@@ -82,37 +90,37 @@ export const signUpWithGmail = async (req, res, next) => {
 };
 
 export const signIn = async (req, res, next) => {
-  const { email, password } = req.body;
-  const user = await userModel.findOne({
-    email,
-    provider: providerEnum.system,
-  });
-  if (!user) {
-    //   res.status(409).json({ message: `user does not exist` });
-    throw new Error("user does not exist", { cause: 404 });
-  }
-  if (!Compare({ plainText: password, cipherText: user.password })) {
-    //   res.status(400).json({ message: `invalid password` });
-    throw new Error("invalid password", { cause: 600 });
-  }
+  // const { email, password } = req.body;
+  // const user = await userModel.findOne({
+  //   email,
+  //   provider: providerEnum.system,
+  // });
+  // if (!user) {
+  //   //   res.status(409).json({ message: `user does not exist` });
+  //   throw new Error("user does not exist", { cause: 404 });
+  // }
+  // if (!Compare({ plainText: password, cipherText: user.password })) {
+  //   //   res.status(400).json({ message: `invalid password` });
+  //   throw new Error("invalid password", { cause: 600 });
+  // }
 
-  const accessToken = generateToken({
-    payload: { id: user._id, email: user.email },
-    secritKey:SECRET_KEY,
-    options: {
-      expiresIn: "1h",
-      // issuer:"Matar",
-      // audience:"People",
-      jwtid: uuidv4(),
-      // noTimestamp:true,
-      // notBefore:'1m'
-    },
-  });
+  // const accessToken = generateToken({
+  //   payload: { id: user._id, email: user.email },
+  //   secritKey:SECRET_KEY,
+  //   options: {
+  //     expiresIn: "1h",
+  //     // issuer:"Matar",
+  //     // audience:"People",
+  //     jwtid: uuidv4(),
+  //     // noTimestamp:true,
+  //     // notBefore:'1m'
+  //   },
+  // });
 
   successResponse({
     res,
-    message: "Successful sign in",
-    data: { accessToken },
+    message: "Successful sign in"
+    // data: { accessToken },
   });
 };
 
