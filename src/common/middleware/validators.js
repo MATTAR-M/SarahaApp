@@ -6,8 +6,13 @@ export const Validation = (schema) => {
     for (const key of Object.keys(schema)) {
     const {error} = schema[key].validate(req[key],{abortEarly:false})
     if (error) {
-    errorMessage.push(error.details)
-// throw new Error("validation error",error);
+        error.details.forEach(element => {
+            errorMessage.push({
+                key,
+                path:element.path,
+                message:element.message
+            })
+        });
 }
     if(errorMessage.length>0){
         return res.status(400).json({message:"validation error",error:errorMessage})
