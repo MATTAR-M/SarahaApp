@@ -11,6 +11,7 @@ const bootstrap = ()=>{
     app.use(cors({origin : "*"}),express.json())
     checkConnection()
     userModel
+    app.use("/uploads",express.static("matar"))
     app.use('/users',userRouter)
     app.get('/', (req, res) => res.send('Hello World!'))
     app.use('{/*demo}',(req,res,next)=>{

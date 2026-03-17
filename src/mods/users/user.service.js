@@ -17,43 +17,52 @@ import {
 import { authentication } from "../../common/middleware/authentication.js";
 import { OAuth2Client } from "google-auth-library";
 import { SALT_ROUNDS, SECRET_KEY } from "../../../config/config.service.js";
+import { generateOtp, sendEmail } from "../../common/utils/emial/sendEmail.js";
+import cloudinary from "../../common/utils/cloudinary.js";
 
 export const signUp = async (req, res, next) => {
   const { userName, email, password, cpassword, age, gender, phone } = req.body;
   if (await DBS.findone({ model: userModel, filter: { email } })) {
-    //   res.status(409).json({ message: `email already exist` });
+      res.status(409).json({ message: `email already exist` });
     throw new Error("email already exist", { cause: 402 });
   }
-  let arr_paths = []
-  for (const file of req.files.attachments) {
-    arr_paths.push(file.path)
-  }
-  const user = await db_service.create({
-    model: userModel,
-    data: {
-    userName,
-    email,
-    password: Hash({ plain_text: password }),
-    gender,
-    phone: encrypt (phone),
-    profilePicture: req.files.attachment[0].path,
-    coverPictures: arr_paths
-    }
+  const {secure_url,public_id} = await cloudinary.uploader.upload(req.file.path,{
+    folder:"Saraha_App_Matar",
+    // public_id:"Matar",
+    // use_filename:true,
+    // unique_filename:false,
+    // resource_type:"video"
   })
+
+  // let arr_paths = [];
+  // for (const file of req.files.attachments) {
+  //   arr_paths.push(file.path);
+  // }
   // if (password != cpassword) {
   //   throw new Error("password not matched", { cause: 400 });
-  // }
-  // const user = await DBS.create({
-  //   model: userModel,
-  //   data: {
-  //     userName,
-  //     email,
-  //     password: Hash({ plainText: password },{salt_rounds:SALT_ROUNDS}),
-  //     phone: encrypt(phone),
-  //     age,
-  //     gender,
-  //   },
-  // });
+  // // }
+  const user = await DBS.create({
+    model: userModel,
+    data: {
+      userName,
+      email,
+      password: Hash({ plainText: password }, { salt_rounds: SALT_ROUNDS }),
+      phone: encrypt(phone),
+      age,
+      gender,
+      profilePicture: {secure_url,public_id},
+      // coverPictures: arr_paths,
+    },
+  });
+
+  // const otp = await generateOtp()
+  // await sendEmail({
+  //   to:email,
+  //   subject:"welcome",
+  //   html:`<h1>hello ${userName}</h1>
+  //   <p>welcome on my saraha app your otp : ${otp}</p>`
+  // })
+  // await setValue({key:`otp::${email}`,value:Hash({plainText:`${otp}`}),})
   // const accessToken = generateToken({
   //   payload: { id: user._id, email: user.email },
   //   secritKey: SECRET_KEY,
@@ -62,7 +71,7 @@ export const signUp = async (req, res, next) => {
   //     jwtid: uuidv4(),
   //   },
   // });
-  successResponse({ res, status: 201 ,data:user});
+  successResponse({ res, status: 201, data: user });
 };
 
 export const signUpWithGmail = async (req, res, next) => {
@@ -85,15 +94,15 @@ export const signUpWithGmail = async (req, res, next) => {
       model: userModel,
       data: {
         email,
-        confirmed :email_verified,
-        userName:name,
-        profilePicture:picture,
-        provider:providerEnum.google
+        confirmed: email_verified,
+        userName: name,
+        profilePicture: picture,
+        provider: providerEnum.google,
       },
     });
   }
-  if(user.provider==providerEnum.system){
-    throw new Error("please log in with system only",{cause:406})
+  if (user.provider == providerEnum.system) {
+    throw new Error("please log in with system only", { cause: 406 });
   }
   const accessToken = generateToken({
     payload: { id: user._id, email: user.email },

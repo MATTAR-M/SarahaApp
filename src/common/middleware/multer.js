@@ -1,7 +1,7 @@
 import multer from "multer";
 import fs from "node:fs"
 
-export const multer_local = ({path:customPath="General",type:fileType=[]}=[])=>{
+export const multer_local = ({path:customPath="General",type:fileType=[]}={})=>{
 const fullPath = `matar/${customPath}`
 if(!fs.existsSync(fullPath)){
   fs.mkdirSync(fullPath,{recursive:true})
@@ -24,3 +24,16 @@ const storage = multer.diskStorage({
   const upload = multer({ storage,fileFilter })
   return upload
 }
+
+export const multer_host = (fileType = [])=>{
+  
+  const storage = multer.diskStorage({})
+    function fileFilter (req, file, cb) {
+      if(!fileType.includes(file.mimetype)){
+        cb(new Error("inValid Type"))
+      }
+      cb(null,true)
+    }
+    const upload = multer({ storage,fileFilter })
+    return upload
+  }
