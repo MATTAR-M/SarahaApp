@@ -26,12 +26,12 @@ export const find = async ({model,filter={},options={}}={}) => {
     return await doc.exec()
 };
 
-export const updateOne = async ({model,filter={},options={}}={}) => {
+export const updateOne = async ({model,filter={},update={},options={}}={}) => {
     const doc = model.updateOne(filter,update,{runValidators:true,...options})
     return await doc.exec()
 };
 
-export const findAndupdateOne = async ({model,filter={},options={}}={}) => {
+export const findAndupdateOne = async ({model,filter={},update={},options={}}={}) => {
     const doc = model.findOneAndUpdate(filter,update,{new:true,runValidators:true,...options})
     return await doc.exec()
 };

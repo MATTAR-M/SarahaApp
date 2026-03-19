@@ -5,9 +5,8 @@ import { authorization } from "../../common/middleware/authorization.js";
 import { RoleEnum } from "../../common/enum/user.enum.js";
 import { Validation } from "../../common/middleware/validators.js";
 import * as UV from "../users/user.validation.js";
-import { multer_local,multer_host } from "../../common/middleware/multer.js";
+import { multer_local, multer_host } from "../../common/middleware/multer.js";
 import { fileTypeEnum } from "../../common/enum/Multer.enum.js";
-// import {multer_enum } from "../../common/enum/multer.enum.js"  <= add this file with it's corrisponding logic after reviewing the videos
 const userRouter = Router();
 
 // userRouter.post(
@@ -20,7 +19,11 @@ const userRouter = Router();
 //   );
 // Validation(UV.signUpSchema),
 userRouter.post("/signup/gmail", US.signUpWithGmail);
-userRouter.post('/signup',multer_host(fileTypeEnum.image).single("attachment"),US.signUp)
+userRouter.post(
+  "/signup",
+  multer_host(fileTypeEnum.image).single("attachment"),
+  US.signUp
+);
 
 userRouter.post(
   "/signin",
@@ -28,6 +31,7 @@ userRouter.post(
     path: "users/admin",
     type: [...fileTypeEnum.image, ...fileTypeEnum.pdf],
   }).single("attachment"),
+  Validation(UV.signInSchema),
   US.signIn
 );
 userRouter.get(
@@ -36,5 +40,24 @@ userRouter.get(
   authorization([RoleEnum.user]),
   US.getProfile
 );
+userRouter.get("/rToken", US.refresh_Token);
+userRouter.get(
+  "/share-profile/:id",
+  Validation(UV.shareProfileSchema),
+  US.shareProfile
+);
 
+userRouter.patch(
+  "/update-profile",
+  Validation(UV.updateProfileSchema),
+  authentication,
+  US.updateProfile
+);
+
+userRouter.patch(
+  "/update-password",
+  authentication,
+  Validation(UV.updatePasswordSchema),
+  US.updatePassword
+);
 export default userRouter;
