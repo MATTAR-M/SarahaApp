@@ -20,6 +20,9 @@ import { PREFIX, Refresh_SECRET_KEY, SALT_ROUNDS, SECRET_KEY } from "../../../co
 import { generateOtp, sendEmail } from "../../common/utils/emial/sendEmail.js";
 import cloudinary from "../../common/utils/cloudinary.js";
 import { model } from "mongoose";
+import {randomUUID} from "crypto"
+import revokeTokenModel from "../../DB/Models/revokeToken.model.js";
+import { get_Key, key, revoked_key } from "../../DB/redis/redis.service.js";
 
 export const signUp = async (req, res, next) => {
   const { userName, email, password, cpassword, age, gender, phone } = req.body;
@@ -129,15 +132,15 @@ export const signIn = async (req, res, next) => {
     //   res.status(400).json({ message: `invalid password` });
     throw new Error("invalid password", { cause: 600 });
   }
-
+  const jwtid = randomUUID()
   const accessToken = generateToken({
-    payload: { id: user._id, email: user.email },
+    payload: { id: user._id, email: user.email},
     secritKey:SECRET_KEY,
     options: {
       expiresIn: "1h",
       // issuer:"Matar",
       // audience:"People",
-      jwtid: uuidv4(),
+      jwtid,
       // noTimestamp:true,
       // notBefore:'1m'
     },
@@ -147,7 +150,7 @@ export const signIn = async (req, res, next) => {
     secritKey:Refresh_SECRET_KEY,
     options : {
       expiresIn:"7d",
-      jwtid: uuidv4(),
+      jwtid,
     }
   })
   successResponse({
@@ -158,6 +161,14 @@ export const signIn = async (req, res, next) => {
 };
 
 export const getProfile = async (req, res, next) => {
+  const key = `profile::${req.user._id}`
+  if(userExists){
+    return successResponse({ res, status: 201, data: req.user });
+  }
+  await setValue({key,value:req.user,ttl:60})
+  
+  successResponse({ res, status: 201, data: req.user }); 
+  
   const accessToken = generateToken({
     payload: { id: user._id, email: user.email },
     secritKey:SECRET_KEY,
@@ -167,7 +178,6 @@ export const getProfile = async (req, res, next) => {
   successResponse({ res, status: 201, data: req.user });
   // successResponse({res,status:201,data:{...user._doc,phone:decrypt(user.phone)}})
 };
-
 
 export const refresh_Token = async (req, res, next) => {
   const {authorization} = req.headers;
@@ -188,6 +198,10 @@ throw new Error("user not found",{cause:402})
 if(!decoded ||!decoded?.id){
     throw new Error("inValid token")
 }
+const isRevoked = await DBS.findone({model:revokeTokenModel,filter:{tokenId:decoded.jti}})
+if(isRevoked){
+    throw new Error("token is revoked")
+}   
 const accessToken = generateToken({
   payload: { id: user._id, email: user.email },
   secritKey:SECRET_KEY,
@@ -198,9 +212,6 @@ const accessToken = generateToken({
 });
   successResponse({ res, status: 201, data: accessToken });
 };
-
-
-
 
 export const shareProfile = async (req, res, next) => {
 
@@ -219,8 +230,6 @@ user.phone = decrypt(user.phone)
 successResponse({res,status:201,data:user})
 }
 
-
-
 export const updateProfile = async (req, res, next) => {
   let  {firstName,lastName,phone,gender } = req.body;
 
@@ -237,11 +246,10 @@ export const updateProfile = async (req, res, next) => {
   if(!user){
     throw new Error("user not found",{cause:404})
   }
-
+  await deleteKey({key:`profile::${req.user._id}`}) 
 
   successResponse({res,status:201,data:user})
 }
-
 
 export const updatePassword = async (req, res, next) => {
   const {oldPassword,newPassword} = req.body;
@@ -257,4 +265,28 @@ await DBS.updateOne({
   update:{password:hash}
 })
   successResponse({res,status:201,data:"password updated successfully"})
+}
+
+export const logOut = async (req, res, next) => {
+  const {flag} = req.query
+  if(flag === "all"){
+  req.user.changeCredentials = Date.now()
+  await req.user.save()
+  await deleteKey(await key(get_Key({userId:req.user._id})))
+  }else{
+    await setValue({
+      key:revoked_key({userId:req.user._id,jti:req.decoded.jti}),
+      value:req.user._id,
+      ttl:req.decoded.exp - Math.floor(Date.now()/1000)
+    }) 
+    // await DBS.create({
+    //   model:revokeTokenModel,
+    //   data:{
+    //     userId:req.user._id,
+    //     tokenId:req.decoded.jti,
+    //     expiresAt:new Date(req.decoded.exp * 1000)
+    //   }
+    // })   
+  }
+  successResponse({res})
 }

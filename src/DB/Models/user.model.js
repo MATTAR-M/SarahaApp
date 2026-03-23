@@ -44,13 +44,14 @@ const userSchema = new mongoose.Schema(
         default : genderEnum.male
     },
     profilePicture :{
-      secure_url:{type : String,required:true},
-      public_id : {type : String,required:true}
+      secure_url:{type : String},
+      public_id : {type : String}
     }, 
     coverPictures : {
-      secure_url:{type : String,required:true},
-      public_id : {type : String,required:true}
+      secure_url:{type : String},
+      public_id : {type : String}
     },
+    changeCredentials : Date,
     confirmed : Boolean,
     provider:{
         type : String,

@@ -4,12 +4,19 @@ import checkConnection from './DB/connectionDB.js'
 import userRouter from './mods/users/user.contorller.js'
 import cors from 'cors'
 import { Port } from '../config/config.service.js'
+import { redis_Connection, redis_Client } from './DB/redis/redis.connection.js'
 const app = express()
 const port = Port
 
-const bootstrap = ()=>{
+const bootstrap = async ()=>{
     app.use(cors({origin : "*"}),express.json())
     checkConnection()
+    await redis_Connection()
+    // await redis_Client.set("name","SarahaApp")
+    // const data = await redis_Client.get("name")
+    // await redis_Client.del("name")
+    // console.log(data)
+
     userModel
     app.use("/uploads",express.static("matar"))
     app.use('/users',userRouter)

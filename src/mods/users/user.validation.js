@@ -42,14 +42,11 @@ export const signInSchema = {
     })
     .required(),
 };
-
 export const shareProfileSchema = {
     params: joi.object({
         id: generalRules.id.required(),
     }).required(),    
 }
-
-
 export const updateProfileSchema = {
     body : joi.object({
         firstName: joi.string().trim().min(3).max(40),
@@ -58,11 +55,10 @@ export const updateProfileSchema = {
         gender: joi.string().valid(...Object.values(genderEnum)),
     })
 }
-
 export const updatePasswordSchema = {
     body : joi.object({
         oldPassword: generalRules.password.required(),
         newPassword: generalRules.password.required(),
-        cnewPassword: joi.string().valid(joi.ref("newPassword")),
+        cnewPassword: joi.string().valid(joi.ref("newPassword")).required(),
     }).required()
 }   
