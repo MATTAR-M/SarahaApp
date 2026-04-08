@@ -24,7 +24,12 @@ userRouter.post(
   multer_host(fileTypeEnum.image).single("attachment"),
   US.signUp
 );
-
+userRouter.patch(
+  "/confirm-email",
+  // Validation(UV.confirmEmailSchema),
+  US.confirmEmail
+);
+userRouter.post("/resend-otp", US.resendOtp);
 userRouter.post(
   "/signin",
   multer_local({
@@ -46,7 +51,16 @@ userRouter.get(
   Validation(UV.shareProfileSchema),
   US.shareProfile
 );
-
+userRouter.patch(
+  "/resetpassword",
+  Validation(UV.resetPasswordSchema),
+  US.resetPassword
+);
+userRouter.patch(
+  "/forgotpassword",
+  Validation(UV.resendOtpSchema),
+  US.forgotPassword
+);
 userRouter.patch(
   "/update-profile",
   Validation(UV.updateProfileSchema),
@@ -60,9 +74,5 @@ userRouter.patch(
   Validation(UV.updatePasswordSchema),
   US.updatePassword
 );
-userRouter.post(
-  "/logout",
-  authentication ,
-  US.logOut
-);
+userRouter.post("/logout", authentication, US.logOut);
 export default userRouter;

@@ -5,6 +5,7 @@ import userRouter from './mods/users/user.contorller.js'
 import cors from 'cors'
 import { Port } from '../config/config.service.js'
 import { redis_Connection, redis_Client } from './DB/redis/redis.connection.js'
+import messageRouter from './mods/messages/message.controller.js'
 const app = express()
 const port = Port
 
@@ -20,6 +21,7 @@ const bootstrap = async ()=>{
     userModel
     app.use("/uploads",express.static("matar"))
     app.use('/users',userRouter)
+    app.use('/messages',messageRouter)
     app.get('/', (req, res) => res.send('Hello World!'))
     app.use('{/*demo}',(req,res,next)=>{
         // res.status(404).json({message:`URL ${req.originalUrl} not found`})

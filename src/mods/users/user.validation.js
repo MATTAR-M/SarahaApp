@@ -62,3 +62,14 @@ export const updatePasswordSchema = {
         cnewPassword: joi.string().valid(joi.ref("newPassword")).required(),
     }).required()
 }   
+export const resendOtpSchema = {
+    body : joi.object({
+        email: generalRules.email.required(),
+    }).required()
+}
+export const resetPasswordSchema = {
+  body : signInSchema.body.append({
+  code: joi.string().regex(/^\d{6}$/).required(),
+  cPassword:generalRules.cpassword.required()
+  }).required()
+}

@@ -3,6 +3,8 @@ import * as DBS from "../../DB/db.service.js"
 import userModel from "../../DB/Models/user.model.js"
 import revokeTokenModel from "../../DB/Models/revokeToken.model.js"
 import { PREFIX, SECRET_KEY } from "../../../config/config.service.js"
+import { get } from "mongoose"
+import { getValue } from "../../DB/redis/redis.service.js"
 
 export const authentication = async (req,res,next)=>{
   
@@ -27,7 +29,7 @@ export const authentication = async (req,res,next)=>{
     if(user?.changeCredentials?.getTime()>decoded.iat*1000){
         throw new Error("token is expired")
     }
-    const isRevoked = await get({key:`revokeToken::${user._id}::${decoded.jti}`})
+    const isRevoked = await getValue({key:`revokeToken::${user._id}::${decoded.jti}`})
     if(isRevoked){
         throw new Error("token is revoked")
     }   
