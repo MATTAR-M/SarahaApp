@@ -4,7 +4,7 @@ import checkConnection from "./DB/connectionDB.js";
 import userRouter from "./mods/users/user.contorller.js";
 import { rateLimit } from "express-rate-limit";
 import cors from "cors";
-import { Port } from "../config/config.service.js";
+import { Port, WHITELIST } from "../config/config.service.js";
 import { redis_Connection, redis_Client } from "./DB/redis/redis.connection.js";
 import messageRouter from "./mods/messages/message.controller.js";
 import helmet from "helmet";
