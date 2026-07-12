@@ -1,8 +1,8 @@
 import mongoose from "mongoose";
-import { DB_URI } from "../../config/config.service.js";
+import { DB_URI, DB_URI_ONLINE } from "../../config/config.service.js";
 const checkConnection = async () => {
   await mongoose
-    .connect(DB_URI, {
+    .connect(DB_URI_ONLINE, {
       serverSelectionTimeoutMS: 5000,
     })
     .then(() => {

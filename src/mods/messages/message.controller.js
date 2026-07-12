@@ -5,7 +5,7 @@ import { multer_local } from "../../common/middleware/multer.js";
 import { Validation } from "../../common/middleware/validators.js";
 import { fileTypeEnum } from "../../common/enum/Multer.enum.js";
 import { authentication } from "../../common/middleware/authentication.js";
-const messageRouter = Router();
+const messageRouter = Router({mergeParams:true});
 
 messageRouter.post(
   "/send",

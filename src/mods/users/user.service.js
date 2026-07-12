@@ -176,28 +176,6 @@ export const confirmEmail = async (req, res, next) => {
     message: "email confirmed successfully",
   });
 };
-export const resendOtp = async (req, res, next) => {
-  const { email } = req.body;
-
-  const user = await DBS.findone({
-    model: userModel,
-    filter: {
-      email,
-      confirmed: { $exists: false },
-      provider: providerEnum.system,
-    },
-  });
-  if (!user) {
-    throw new Error("user not found or has been confirmed", { cause: 404 });
-  }
-  await sendEmailotp({email,subject:emailEventEnum.confiemEmail});
-
-  successResponse({
-    res,
-    status: 201,
-    message: "email confirmed successfully",
-  });
-};
 
 export const signUpWithGmail = async (req, res, next) => {
   const { idToken } = req.body;
@@ -463,3 +441,34 @@ export const logOut = async (req, res, next) => {
   }
   successResponse({ res });
 };
+
+export const resendOtp = async (req, res, next) => {
+  const { email } = req.body;
+  const user = await DBS.findone({
+    model: userModel,
+    filter: { email,confirmed:{$exists:false},provider:providerEnum.system },
+
+  });
+  if (!user) {
+    throw new Error("user not found", { cause: 404 });
+  }
+  const otp = await generateOtp();
+  eventemitter.emit(emailEventEnum.confiemEmail, async () => {
+    await sendEmail({
+      to: email,
+      subject: "welcome",
+      html: emailTemplate(otp),
+    });
+    await setValue({
+      key: otpKey({ email,subject:emailEventEnum.confiemEmail }),
+      value: Hash({ plainText: `${otp}` }),
+      ttl: 60 * 2,
+    });
+
+})
+successResponse({
+  res,
+  status: 201,
+  message: "otp sent to email successfully",
+})
+}

@@ -52,7 +52,7 @@ export const getMessage = async (req, res, next) => {
     const messages = await DBS.find({
       model: messageModel,
       filter:{
-        userId:req.user._id
+        userId:req.params.userId
       }
     });
     if(!messages){

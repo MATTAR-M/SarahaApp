@@ -7,8 +7,9 @@ import { Validation } from "../../common/middleware/validators.js";
 import * as UV from "../users/user.validation.js";
 import { multer_local, multer_host } from "../../common/middleware/multer.js";
 import { fileTypeEnum } from "../../common/enum/Multer.enum.js";
-const userRouter = Router();
-
+import messageRouter from "../messages/message.controller.js";
+const userRouter = Router({caseSensitive: true, strict: true});
+userRouter.use("/:id/messages",messageRouter)
 // userRouter.post(
 //   "/signup",
 //   multer_local({ type: [...fileTypeEnum.image] }).fields([
